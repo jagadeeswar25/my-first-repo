@@ -1,0 +1,182 @@
+---
+- hosts: localhost
+  become: yes
+  become_user: root
+  tasks:
+    - name: upgrade package
+      yum:
+        name: "*"
+        state: latest
+    - name: add jenkins repo
+      get_url:
+        url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
+        dest: /etc/yum.repos.d/jenkins.repo
+    - name: Import a key file from Jenkins ci
+      ansible.builtin.rpm_key:
+        state: present
+        key: https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+    - name: upgrade package
+      yum:
+        name: "*"
+        state: latest
+    - name: Install Java 11
+      yum:
+        name: java-11-openjdk-devel
+        state: present
+    - name: Install Jenkins
+      yum:
+        name: jenkins
+        state: latest
+    - name: Start Jenkins server
+      ansible.builtin.systemd:
+        enabled: yes
+        name: jenkins
+        state: started
+
+
+sudo wget -O /etc/yum.repos.d/jenkins.repo \
+    https://pkg.jenkins.io/redhat-stable/jenkins.repo
+sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+sudo yum upgrade
+
+sudo yum install fontconfig java-17-openjdk
+sudo yum install jenkins
+sudo systemctl daemon-reload
+
+
+---------------------------------------------------------------------
+Docker Playbokk
+
+
+---
+- name: Install Docker on CentOS 7
+  hosts: localhost
+  become: yes
+
+  tasks:
+    - name: Install required packages
+      yum:
+        name:
+          - yum-utils
+          - device-mapper-persistent-data
+          - lvm2
+        state: present
+
+    - name: Add Docker repository
+      yum_repository:
+        name: docker
+        description: Docker CE Repository
+        baseurl: https://download.docker.com/linux/centos/7/x86_64/stable
+        gpgcheck: yes
+        gpgkey: https://download.docker.com/linux/centos/gpg
+
+    - name: Install Docker
+      yum:
+        name: docker-ce
+        state: present
+
+    - name: Start and enable Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+-----------------------------------------------
+
+NodeJs
+
+---
+- hosts: localhost
+  become: yes
+  tasks:
+    - name: install gcc-c++ package
+      yum:
+        name: gcc-c++
+        state: latest
+    - name: add nodejs repo
+      shell: curl -sL https://rpm.nodesource.com/setup_6.x | sudo -E bash -
+    - name: Install nodejs package
+      yum:
+        name: nodejs
+        state: latest
+
+----------------------------------------------------
+
+java and git
+
+---
+- hosts: localhost
+  become: yes
+  tasks:
+
+  - name: Install java package
+    yum: name={{ item }}
+    with_items:
+      - java
+      - git
+
+------------------------------------------------------
+
+httpd
+
+---
+- hosts: localhost
+  become: yes
+  tasks:
+    - name: Install httpd package
+      yum:
+        name: httpd
+        state: latest
+    - name: Install httpd package
+      service:
+        name: httpd
+        state: started
+
+--------------------------------------------
+
+nginx
+
+---
+- hosts: localhost
+  become: yes
+  tasks:
+    - name: Install nginx package
+      yum:
+        name: nginx
+        state: latest
+    - name: star service nginx
+      service:
+        name: nginx
+        state: started        
+
+------------------------------------------------
+
+yarn package
+
+---
+- hosts: localhost
+  become: yes
+  tasks:
+    
+    
+    - name: Install node source
+      shell: curl --silent --location https://rpm.nodesource.com/setup_10.x | sudo bash -
+    
+    - name: Install nodejs package
+      yum:
+        name: nodejs
+        state: latest
+        
+    - name: Install yarnpkg
+      shell: curl --silent --location https://dl.yarnpkg.com/rpm/yarn.repo | sudo tee /etc/yum.repos.d/yarn.repo
+      
+    - name: import key
+      shell: rpm --import https://dl.yarnpkg.com/rpm/pubkey.gpg
+      
+    - name: Install yarn package
+      yum:
+        name: yarn
+        state: latest
+      
+
+    

@@ -1,0 +1,71 @@
+sudo wget -O /etc/yum.repos.d/jenkins.repo \
+    https://pkg.jenkins.io/redhat-stable/jenkins.repo
+
+sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+
+sudo yum upgrade
+
+
+sudo yum install fontconfig java-17-openjdk
+
+sudo yum install jenkins
+
+sudo systemctl start jenkins
+
+---
+- hosts: localhost
+  become: yes
+  tasks:
+    - name: Install Jenkins repo source
+      get_url:
+        url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
+        dest: /etc/yum.repos.d/jenkins.repo
+    - name: Import Jenkins GPG key
+      rpm_key:
+        key: https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+        state: present
+    
+    - name: Install Java 11
+      yum:
+        name: java-11-openjdk
+        state: present
+    - name: Install Jenkins
+      yum:
+        name: jenkins
+        state: latest
+    - name: Start Jenkins server
+      service:
+        name: jenkins
+        state: started
+
+
+
+------------------------------------------------------------------------
+
+---
+- hosts: localhost
+  become: yes
+  tasks:
+    - name: Install Jenkins repo source
+      shell: wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+    - name: Import Jenkins GPG key
+      shell: rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+        
+    - name: Upgrade all packages
+      yum:
+        name: "*"
+        state: latest
+    - name: Install Java 11
+      yum:
+        name: java-1.8.0-openjdk
+        state: present
+    - name: Install Jenkins
+      yum:
+        name: jenkins
+        state: latest
+    - name: start jenkins server
+      service:
+        name: jenkins
+        state: started
+
+
